@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { PromptGenerator } from './components/PromptGenerator';
 import { ImageAnalyzer } from './components/ImageAnalyzer';
 import type { Mode, HistoryItem, PromptHistoryItem, ImageHistoryItem } from './types';
-import { AgInkIcon, BrainCircuitIcon, ImageIcon, KeyIcon, HistoryIcon, CheckIcon, CloseIcon, SunIcon, MoonIcon } from './components/icons';
+import { AgInkIcon, BrainCircuitIcon, ImageIcon, KeyIcon, HistoryIcon, CheckIcon, CloseIcon, SunIcon, MoonIcon, InfoIcon } from './components/icons';
 
 const MAX_HISTORY_ITEMS = 10;
 
@@ -19,6 +19,7 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [initialData, setInitialData] = useState<HistoryItem | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -170,7 +171,16 @@ const App: React.FC = () => {
                 AG ink
                 </h1>
             </div>
-            <div className="w-48"></div> {/* Spacer to balance header */}
+            <div className="w-48 flex justify-end">
+                 <button 
+                    onClick={() => setShowAboutModal(true)} 
+                    className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                    aria-label="About AG ink"
+                >
+                    <InfoIcon className="w-5 h-5" />
+                    <span>About</span>
+                </button>
+            </div>
         </header>
         
         <main className="w-full flex-grow flex items-center justify-center">
@@ -191,6 +201,7 @@ const App: React.FC = () => {
         
         {showHistoryPanel && <HistoryPanel history={history} onLoad={loadFromHistory} onClose={() => setShowHistoryPanel(false)} />}
         {showApiKeyModal && <ApiKeyModal currentKey={apiKey} onSave={saveApiKey} onClose={() => setShowApiKeyModal(false)} />}
+        {showAboutModal && <AboutModal onClose={() => setShowAboutModal(false)} />}
       </div>
     </>
   );
@@ -229,6 +240,36 @@ const ApiKeyModal: React.FC<{ currentKey: string | null; onSave: (key: string) =
         </div>
     );
 }
+
+const AboutModal: React.FC<{ onClose: () => void; }> = ({ onClose }) => {
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 animate-fade-in p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 w-full max-w-2xl m-4 flex flex-col max-h-[90vh]">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">About AG ink</h3>
+                    <button onClick={onClose} className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><CloseIcon className="w-6 h-6" /></button>
+                </div>
+                <div className="flex-grow overflow-y-auto pr-4 -mr-4 text-gray-600 dark:text-gray-400 space-y-4">
+                    <p>
+                        <strong className="text-gray-700 dark:text-gray-300">Developed by:</strong> AG Studios<br />
+                        <strong className="text-gray-700 dark:text-gray-300">Founders of AG Studios:</strong> Asmin Adhikari & Ashok Gaire
+                    </p>
+                    <p>AG ink is a global platform designed to help people everywhere use any AI tool effortlessly. Our mission is simple — to make artificial intelligence easy, accessible, and enjoyable for everyone, regardless of technical skill or background.</p>
+                    <p>The idea behind AG ink was born from our own struggles with writing effective prompts. We often found it challenging to make AI models fully understand what we wanted, and that inspired us to create something better — a tool that simplifies interaction with any AI.</p>
+                    <p>We firmly believe that technology should unite, not divide. That’s why AG ink has no paid plans — everything is free for everyone. Our philosophy centers on equality, accessibility, and the belief that innovation should empower people equally across the world.</p>
+                    <p>Powered by Gemini Intelligence, AG ink connects users to a wide range of AI platforms with ease, enabling them to generate prompts, analyze images, and make the most out of AI technology.</p>
+                    <p>Our vision is to continuously expand AG ink within the context of effective AI use. We are committed to bringing frequent updates and improvements to ensure every user has the best possible experience.</p>
+                    <p>AG ink also includes a one-click tone adjustment feature, allowing users to instantly modify how their prompts sound — whether professional, friendly, or creative.</p>
+                    <p className="font-semibold text-gray-700 dark:text-gray-300 italic mt-6 text-center">“AG ink — Smart Intelligence for Everyone.”</p>
+                </div>
+                <div className="mt-6 flex justify-end border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <button onClick={onClose} className="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-600 transition-colors active:scale-95">Close</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 
 const HistoryPanel: React.FC<{ history: HistoryItem[], onLoad: (item: HistoryItem) => void, onClose: () => void }> = ({ history, onLoad, onClose }) => {
     return (
