@@ -1,7 +1,13 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { AiApp, Plan, AnalysisResult, Tone, Style, Length } from '../types';
 
-const getAiClient = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+if (!process.env.API_KEY) {
+    // This is a fallback for development; the user-provided key will be used in production.
+    console.warn("API_KEY environment variable not set. Using a placeholder.");
+}
+
+const getAiClient = () => new GoogleGenAI({ apiKey: process.env.API_KEY ?? ' ' });
+
 
 export const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
