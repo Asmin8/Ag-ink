@@ -1,7 +1,13 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { AiApp, Plan, AnalysisResult, Tone, Style, Length } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+if (!process.env.API_KEY) {
+    // This is a fallback for development; the user-provided key will be used in production.
+    console.warn("API_KEY environment variable not set. Using a placeholder.");
+}
+
+const getAiClient = () => new GoogleGenAI({ apiKey: process.env.API_KEY ?? ' ' });
+
 
 export const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -21,6 +27,7 @@ export const generateOptimizedPrompt = async (
     length: Length
 ): Promise<string> => {
     try {
+        const ai = getAiClient();
         const needsGrounding = userInput.length < 100; // Use grounding for shorter, less specific prompts
 
         const geminiPrompt = `
@@ -58,12 +65,13 @@ export const generateOptimizedPrompt = async (
         return response.text.trim();
     } catch (error) {
         console.error("Error generating optimized prompt:", error);
-        return "Sorry, an error occurred while generating the prompt. Please try again later.";
+        return "Sorry, I couldn't generate a prompt right now. Please check your API key and try again.";
     }
 };
 
 export const analyzeImagesAndGeneratePrompt = async (images: File[]): Promise<AnalysisResult> => {
     try {
+        const ai = getAiClient();
         const imageParts = await Promise.all(
             images.map(async (file) => {
                 const base64Data = await fileToBase64(file);
@@ -114,7 +122,7 @@ export const analyzeImagesAndGeneratePrompt = async (images: File[]): Promise<An
     } catch (error) {
         console.error("Error analyzing images:", error);
         return {
-            summary: "Sorry, an error occurred while analyzing the images. Please ensure they are valid image files and try again.",
+            summary: "Sorry, I couldn't analyze the images right now. Please ensure they are valid image files, check your API key, and try again.",
             prompt: "Analysis failed."
         };
     }
