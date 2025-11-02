@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { PromptGenerator } from './components/PromptGenerator';
 import { ImageAnalyzer } from './components/ImageAnalyzer';
 import type { Mode, HistoryItem, PromptHistoryItem, ImageHistoryItem } from './types';
-import { AgInkIcon, BrainCircuitIcon, ImageIcon, KeyIcon, HistoryIcon, CheckIcon, CloseIcon, SunIcon, MoonIcon, InfoIcon } from './components/icons';
+import { AgInkIcon, BrainCircuitIcon, ImageIcon, HistoryIcon, CloseIcon, SunIcon, MoonIcon, InfoIcon } from './components/icons';
 
 const MAX_HISTORY_ITEMS = 10;
 
@@ -18,9 +18,7 @@ const App: React.FC = () => {
   const [mode, setMode] = useState<Mode | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
-  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
-  const [apiKey, setApiKey] = useState<string | null>(null);
   const [initialData, setInitialData] = useState<HistoryItem | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
       if (typeof window !== 'undefined' && window.localStorage) {
@@ -35,9 +33,6 @@ const App: React.FC = () => {
     try {
       const storedHistory = localStorage.getItem('ag_ink_history');
       if (storedHistory) setHistory(JSON.parse(storedHistory));
-      
-      const storedApiKey = localStorage.getItem('ag_ink_api_key');
-      if (storedApiKey) setApiKey(storedApiKey);
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
     }
@@ -83,12 +78,6 @@ const App: React.FC = () => {
       setInitialData(item);
       setMode(item.type);
       setShowHistoryPanel(false);
-  };
-  
-  const saveApiKey = (key: string) => {
-      setApiKey(key);
-      localStorage.setItem('ag_ink_api_key', key);
-      setShowApiKeyModal(false);
   };
 
   const renderContent = () => {
@@ -157,12 +146,7 @@ const App: React.FC = () => {
       `}</style>
       <div className="min-h-screen flex flex-col items-center justify-center p-4 font-sans text-gray-900 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 relative">
         <header className="w-full max-w-4xl mx-auto flex justify-between items-center py-8">
-            <div className="w-48 flex items-center gap-2">
-                <button onClick={() => setShowApiKeyModal(true)} className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <KeyIcon className="w-5 h-5" />
-                    API Key
-                    {apiKey && <CheckIcon className="w-5 h-5 text-green-500" />}
-                </button>
+            <div className="w-48 flex justify-start items-center">
                  <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
             </div>
             <div className="flex-grow flex justify-center items-center gap-4">
@@ -200,7 +184,6 @@ const App: React.FC = () => {
         </button>
         
         {showHistoryPanel && <HistoryPanel history={history} onLoad={loadFromHistory} onClose={() => setShowHistoryPanel(false)} />}
-        {showApiKeyModal && <ApiKeyModal currentKey={apiKey} onSave={saveApiKey} onClose={() => setShowApiKeyModal(false)} />}
         {showAboutModal && <AboutModal onClose={() => setShowAboutModal(false)} />}
       </div>
     </>
@@ -216,30 +199,6 @@ const ThemeToggle: React.FC<{ theme: 'light' | 'dark'; toggleTheme: () => void; 
         {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
     </button>
 );
-
-
-const ApiKeyModal: React.FC<{ currentKey: string | null; onSave: (key: string) => void; onClose: () => void; }> = ({ currentKey, onSave, onClose }) => {
-    const [key, setKey] = useState(currentKey || '');
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 animate-fade-in">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 w-full max-w-md m-4">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">Set API Key</h3>
-                    <button onClick={onClose} className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"><CloseIcon className="w-6 h-6" /></button>
-                </div>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">Provide an API key to enhance results. This is optional and not required for core features.</p>
-                <input
-                    type="password"
-                    value={key}
-                    onChange={(e) => setKey(e.target.value)}
-                    placeholder="Enter your API key"
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg shadow-inner focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-gray-200"
-                />
-                <button onClick={() => onSave(key)} className="mt-4 w-full bg-blue-500 text-white font-bold py-3 rounded-lg shadow-md hover:bg-blue-600 transition-colors active:scale-95">Save Key</button>
-            </div>
-        </div>
-    );
-}
 
 const AboutModal: React.FC<{ onClose: () => void; }> = ({ onClose }) => {
     return (
